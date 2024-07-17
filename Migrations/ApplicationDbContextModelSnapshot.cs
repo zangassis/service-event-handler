@@ -59,6 +59,21 @@ namespace ServiceEventHandler.Migrations
                     b.ToTable("Services");
                 });
 
+            modelBuilder.Entity("ServiceEventHandler.Models.ServiceIntegrationError", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Error")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceIntegrationErrors");
+                });
+
             modelBuilder.Entity("ServiceEventHandler.Models.Log", b =>
                 {
                     b.HasOne("ServiceEventHandler.Models.Service", "Service")
