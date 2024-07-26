@@ -20,6 +20,14 @@ builder.Services.AddEnyimMemcached(options =>
 	});
 });
 
+builder.Services.AddEasyCaching(options =>
+{
+    options.UseMemcached(config =>
+    {
+        config.DBConfig.AddServer("127.0.0.1", 11211);
+    }, "memcached");
+});
+
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
