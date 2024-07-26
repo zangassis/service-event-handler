@@ -1,5 +1,4 @@
-﻿using EasyCaching.Core;
-using Enyim.Caching;
+﻿using Enyim.Caching;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -16,14 +15,12 @@ namespace ServiceEventHandler.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IMemoryCache _memoryCache;
         private readonly IMemcachedClient _memcachedClient;
-        private readonly IEasyCachingProviderFactory _cacheFactory;
 
-        public EfficientServicesController(ApplicationDbContext context, IMemoryCache memoryCache, IMemcachedClient memcachedClient, IEasyCachingProviderFactory cacheFactory)
+        public EfficientServicesController(ApplicationDbContext context, IMemoryCache memoryCache, IMemcachedClient memcachedClient)
         {
             _context = context;
             _memoryCache = memoryCache;
             _memcachedClient = memcachedClient;
-            _cacheFactory = cacheFactory;
         }
 
         [HttpGet("log-errors")]
@@ -122,30 +119,50 @@ namespace ServiceEventHandler.Controllers
             return Ok(logErrors);
         }
 
-        [HttpGet("log-errors-cache-distributed-easy")]
-        public async Task<ActionResult<List<Log>>> GetErrorLogsWithCacheDistributedEasy()
+        //[HttpGet("log-errors-cache-distributed-easy")]
+        //public async Task<ActionResult<List<Log>>> GetErrorLogsWithCacheDistributedEasy()
+        //{
+        //    const string CacheKey = "logs_with_error";
+        //    var cacheProvider = _cacheFactory.GetCachingProvider("memcached");
+
+        //    var cachedLogErrors = await cacheProvider.GetAsync<List<Log>>(CacheKey);
+
+        //    List<Log>? logErrors = null;
+
+        //    if (cachedLogErrors.HasValue)
+        //    {
+        //        logErrors = cachedLogErrors.Value;
+        //    }
+        //    else
+        //    {
+        //        logErrors = await _context.Logs
+        //            .Where(l => l.LogLevel == InternalLogLevel.Error)
+        //            .ToListAsync();
+
+        //        await cacheProvider.SetAsync(CacheKey, logErrors, TimeSpan.FromMinutes(30));
+        //    }
+
+        //    return Ok(logErrors);
+        //}
+
+        [HttpPost("create-json-log")]
+        public async Task<ActionResult<ServiceJsonLog>> PostServiceJsonLog([FromBody] ServiceJsonLog serviceJsonLog)
         {
-            const string CacheKey = "logs_with_error";
-            var cacheProvider = _cacheFactory.GetCachingProvider("memcached");
+            _context.ServiceJsonLogs.Add(serviceJsonLog);
+            await _context.SaveChangesAsync();
 
-            var cachedLogErrors = await cacheProvider.GetAsync<List<Log>>(CacheKey);
+            return CreatedAtAction(nameof(GetServiceJsonLog), new { id = serviceJsonLog.Id }, serviceJsonLog);
+        }
 
-            List<Log>? logErrors = null;
+        [HttpGet("get-json-log/{id}")]
+        public async Task<ActionResult<ServiceJsonLog>> GetServiceJsonLog(int id)
+        {
+            var serviceJsonLog = await _context.ServiceJsonLogs.FindAsync(id);
 
-            if (cachedLogErrors.HasValue)
-            {
-                logErrors = cachedLogErrors.Value;
-            }
-            else
-            {
-                logErrors = await _context.Logs
-                    .Where(l => l.LogLevel == InternalLogLevel.Error)
-                    .ToListAsync();
+            if (serviceJsonLog == null)
+                return NotFound();
 
-                await cacheProvider.SetAsync(CacheKey, logErrors, TimeSpan.FromMinutes(30));
-            }
-
-            return Ok(logErrors);
+            return Ok(serviceJsonLog);
         }
     }
 }

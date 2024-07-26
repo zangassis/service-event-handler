@@ -74,6 +74,21 @@ namespace ServiceEventHandler.Migrations
                     b.ToTable("ServiceIntegrationErrors");
                 });
 
+            modelBuilder.Entity("ServiceEventHandler.Models.ServiceJsonLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("JsonLogData")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ServiceJsonLogs");
+                });
+
             modelBuilder.Entity("ServiceEventHandler.Models.Log", b =>
                 {
                     b.HasOne("ServiceEventHandler.Models.Service", "Service")
