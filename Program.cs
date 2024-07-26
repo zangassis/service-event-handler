@@ -11,6 +11,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddEnyimMemcached(options =>
+{
+    options.Servers.Add(new Enyim.Caching.Configuration.Server
+    {
+        Address = "localhost",
+        Port = 11211
+    });
+});
+
+builder.Services.AddMemoryCache();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
