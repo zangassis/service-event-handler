@@ -119,50 +119,23 @@ namespace ServiceEventHandler.Controllers
             return Ok(logErrors);
         }
 
-        //[HttpGet("log-errors-cache-distributed-easy")]
-        //public async Task<ActionResult<List<Log>>> GetErrorLogsWithCacheDistributedEasy()
-        //{
-        //    const string CacheKey = "logs_with_error";
-        //    var cacheProvider = _cacheFactory.GetCachingProvider("memcached");
-
-        //    var cachedLogErrors = await cacheProvider.GetAsync<List<Log>>(CacheKey);
-
-        //    List<Log>? logErrors = null;
-
-        //    if (cachedLogErrors.HasValue)
-        //    {
-        //        logErrors = cachedLogErrors.Value;
-        //    }
-        //    else
-        //    {
-        //        logErrors = await _context.Logs
-        //            .Where(l => l.LogLevel == InternalLogLevel.Error)
-        //            .ToListAsync();
-
-        //        await cacheProvider.SetAsync(CacheKey, logErrors, TimeSpan.FromMinutes(30));
-        //    }
-
-        //    return Ok(logErrors);
-        //}
-
         [HttpPost("create-json-log")]
-        public async Task<ActionResult<ServiceJsonLog>> PostServiceJsonLog([FromBody] ServiceJsonLog serviceJsonLog)
+        public async Task<ActionResult> PostServiceJsonLog([FromBody] ServiceJsonLog serviceJsonLog)
         {
-            _context.ServiceJsonLogs.Add(serviceJsonLog);
+            await _context.ServiceJsonLogs.AddAsync(serviceJsonLog);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetServiceJsonLog), new { id = serviceJsonLog.Id }, serviceJsonLog);
+            return NoContent();
         }
 
-        [HttpGet("get-json-log/{id}")]
-        public async Task<ActionResult<ServiceJsonLog>> GetServiceJsonLog(int id)
+        [HttpGet]
+        public async Task<ActionResult<List<Log>>> GetLogs()
         {
-            var serviceJsonLog = await _context.ServiceJsonLogs.FindAsync(id);
+            List<Log> logs = await _context.Logs
+                .Where(log => log.LogLevel == InternalLogLevel.Error)
+                .ToListAsync();
 
-            if (serviceJsonLog == null)
-                return NotFound();
-
-            return Ok(serviceJsonLog);
+            return Ok(logs);
         }
     }
 }

@@ -103,4 +103,13 @@ public class ServicesController : ControllerBase
         return Ok(errorLogCount);
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Log>>> GetLogs()
+    {
+        IEnumerable<Log> logs = await _context.Logs.ToListAsync();
+       
+        var result = logs.Where(log => log.LogLevel == InternalLogLevel.Error).ToList();
+
+        return Ok(result);
+    }
 }
